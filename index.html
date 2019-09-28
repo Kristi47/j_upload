@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form id="form-id" class="form-class">
+
+        <input type="test">
+        <input type="file" id="photos" name="photos" name="photos[]" multiple>
+
+        <input type="file" id="image" name="image">
+        <input type="file" id="product" name="product">
+        <input type="submit" value="Submit">
+    </form>
+
+
+</body>
+<script
+        src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+        crossorigin="anonymous"></script>
+        <script src="upload.js"></script>
+<script>
+
+    $(document).ready(function(){
+
+        $("#form-id").uploader().submit(function(event){
+            event.preventDefault();
+            var _ = $(this);
+            var formSelector = _.attr("id").length > 0 ? "form#"+_.attr("id") : "form."+_.attr("class");
+            // let formData = new FormData($(this));
+            console.log(formSelector);
+        });
+    })
+
+</script>
+</html>
