@@ -23,14 +23,14 @@
 
              var Module = (function () {
 
-                 const createPreviewContainer = function(_this){
+                 var createPreviewContainer = function(_this){
                      var div_id = _this.attr("id")+"_preview";
                      var div = $("<div></div>");
                      div.attr("id", div_id);
                      _this.after(div);
                  };
 
-                 const handleSingleUpload = function (inputObj){
+                 var handleSingleUpload = function (inputObj){
                      var inputName = inputObj.attr("name");  // get input file name
                      var filePreview = $("#"+inputObj.attr("id")+"_preview"); // get file preview div
                      inputObj.change(function(e){ // change event listener
@@ -53,7 +53,7 @@
                      });
                  };
 
-                 const createPreviewItem = function (file, inputName){
+                 var createPreviewItem = function (file, inputName){
                      var dot = file.name.lastIndexOf('.');
                      var file_size = roundTwoDecimal((file.size / 1000) / 1000);
                      var file_name = file.name.substring(0, dot);
@@ -62,15 +62,15 @@
                      return '<span title="'+file_name+'">'+file_short_name+' /('+file_extension+') ('+file_size+' MB) <a href="" targetInput="'+inputName+'" class="remove">Remove</a></span>';
                  };
 
-                 const roundTwoDecimal = function(number){
+                 var roundTwoDecimal = function(number){
                      return Math.round(number * 100) / 100;
                  };
 
-                 const shortFilename = function (name){
+                 var shortFilename = function (name){
                      return name.length > 10 ? name.substring(0, 10)+'...' : name;
                  };
 
-                 const removeFile = function (){
+                 var removeFile = function (){
                      $(document).on("click",".remove",function(event){
                          event.preventDefault();
                          var targetInput = $(this).attr("targetInput");
