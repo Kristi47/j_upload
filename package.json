@@ -1,0 +1,34 @@
+{
+  "name": "j_upload",
+  "version": "1.0.0",
+  "description": "jQuery module for handling files before uploading them. Add or remove files, custom file validation, custom style for preview",
+  "main": "upload.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kristi47/jquery-fileUploader.git"
+  },
+  "keywords": [
+    "file upload",
+    "upload",
+    "file",
+    "files",
+    "manage files",
+    "files",
+    "jquery",
+    " jquery-plugin",
+    "ecosystem:jquery"
+  ],
+  "author": "Kristi Mita",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Kristi47/jquery-fileUploader/issues"
+  },
+  "homepage": "https://github.com/Kristi47/jquery-fileUploader#readme",
+  "dependencies": {
+    "jquery": "3.4.0"
+  },
+  "devDependencies": {}
+}
