@@ -2,7 +2,7 @@
   "name": "j_upload",
   "version": "1.0.0",
   "description": "jQuery module for handling files before uploading them. Add or remove files, custom file validation, custom style for preview",
-  "main": "j_upload.js",
+  "main": "src/js/j_upload.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
