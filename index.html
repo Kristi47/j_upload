@@ -3,35 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <form id="form-id" class="form-class">
+<form id="form-id" class="form-class" enctype="multipart/form-data">
 
-        <input type="test">
-        <input type="file" id="photos" name="photos" name="photos[]" multiple>
-        <input type="file" id="videos" name="videos" name="videos[]" multiple>
-        <input type="file" id="image" name="image">
-        <input type="file" id="product" name="product">
-        <input type="submit" value="Submit">
-    </form>
+    <input type="text" name="firstname">
+    <input type="file" id="photos" name="photos[]" multiple>
+    <input type="file" id="videos"  name="videos[]" multiple>
+    <input type="file" id="image" name="image">
+    <input type="file" id="product" name="product">
+    <input type="button"  id="clicked" value="Click">
+    <input type="submit" value="Submit">
+</form>
 
 
 </body>
 <script
-        src="https://code.jquery.com/jquery-2.2.4.min.js"
-        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
         crossorigin="anonymous"></script>
-        <script src="upload.js"></script>
+<script src="j_upload.js"></script>
 <script>
 
     $(document).ready(function(){
 
-        $("#form-id").uploader().submit(function(event){
+        $("#form-id").j_upload().submit(function(event){
             event.preventDefault();
-            console.log($(this));
-            var formData = new FormData();
-            console.log(formData);
+            var formData = form_bind(this);
+            $.ajax({
+                url: "back.php",
+                type: "POST",
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    console.log(data);
+                },
+                error: function (xhr, error, code) {
+                    console.log(xhr);
+                }
+            });
         });
+
+        // var formSelector = _this.attr("id").length > 0 ? "form#" + _this.attr("id") : "form." + _this.attr("class"); // prepare form select form#id or form.class
+        // var formData = new FormData(document.querySelector('form#form-id'));
+
     })
 
 </script>
