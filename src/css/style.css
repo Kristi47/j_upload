@@ -1,4 +1,3 @@
-
 /*
     Preview Dom Element style
 */
@@ -18,6 +17,26 @@
     padding:5px;
     border:1px solid #ccc;
     margin-top:5px;
+}
+
+/*
+    Message Dom Element style
+*/
+.j_message_container{
+    width:100%;
+    height:auto;
+    display:inline-block;
+}
+
+/*
+    Message Dom Element items style
+*/
+.j_message_container{
+    width:100%;
+    height:auto;
+    float:left;
+    margin-top:8px;
+    color:red
 }
 
 /*
