@@ -28,7 +28,9 @@
 
     $(document).ready(function(){
 
-        $("#form-id").j_upload().submit(function(event){
+        $("#form-id").j_upload({
+
+        }).submit(function(event){
             event.preventDefault();
             var formData = form_bind(this);
             $.ajax({

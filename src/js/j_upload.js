@@ -1,19 +1,26 @@
 (function ($, window, document) {
-
     $.fn.j_upload = function (options) {
         return this.each(function () {
-
             var Helper = (function () {
 
                 var _id = "#{input_name}_preview";
                 var tag_builder = "<{tag}></{tag}>";
-                var tag_remove = "<a href='' target='{input_name}' file_id='{file_id}' class='{custom_class} {default_class}'>{rm_label}</a>";
+                var tag_remove = "<a href='' target='{input_name}' file_id='{file_id}' class='{custom_class} {default_class}'>{rm_label}</a>"
 
                 var createPreviewElement = function (input_obj, options) {
                     var dom_element = $(tag_builder.pyFormat({tag: options.preview_element}));
                     dom_element.attr("id", input_obj.attr("id") + "_preview");
                     dom_element.attr("class", "j_preview_container");
                     input_obj.after(dom_element);
+                    if(options.enable_validation)
+                        createMessageElement(dom_element, options);
+                };
+
+                var createMessageElement = function (dom_element, options) {
+                    var msg_element = $(tag_builder.pyFormat({tag: options.message_element}));
+                    msg_element.attr("id", dom_element.attr("id") + "_message");
+                    msg_element.attr("class", "j_message_container");
+                    dom_element.after(msg_element);
                 };
 
                 var handleSingleFileUpload = function (input_obj, options) {
@@ -27,6 +34,8 @@
                         single_files[input_name] = {
                             file: file
                         };
+                        if(options.enable_validation)
+                            singleFileValidation(input_name, options);
                         clearFileInput(e, input_name);
                     });
                 };
@@ -47,6 +56,8 @@
                                 file: file
                             });
                         }
+                        if(options.enable_validation)
+                            multipleFileValidation(input_name, options);
                         clearFileInput(e, input_name);
                     });
                 };
@@ -68,7 +79,6 @@
                     var file_info = getFileInfo(file);
                     var exists = checkFileExist(file_info, input_name);
                     file_info['exist_class'] = exists ? "j_file_exist" : "";
-                    console.log(file_info['exist_class']);
                     file_info['tag'] = options.preview_element_item;
                     file_info['file_id'] = file_id;
                     file_info['href'] = tag_remove.pyFormat({
@@ -116,6 +126,33 @@
                     return false;
                 };
 
+                var singleFileValidation = function (input_name, options) {
+                    var file_info = getFileInfo(single_files[input_name].file);
+                    var message_preview = $("#"+input_name+"_preview_message");
+                    var valid = true;
+                    if(file_info.file_size > options.validation[input_name].file_size) valid = false;
+                    if(options.validation[input_name].file_type.length !== 0){
+                        if($.inArray(file_info.file_extension, (options.validation[input_name].file_type)) < 0) valid = false;
+                    }
+                    if(!valid) message_preview.html("ka Error");
+                    else message_preview.html("");
+                };
+
+                var multipleFileValidation = function (input_name, options) {
+                    var message_preview = $("#"+input_name+"_preview_message");
+                    var valid = true;
+                    for (var i = 0; i < multiple_files[input_name].length; i++) {
+                        var file_info = getFileInfo(multiple_files[input_name][i].file);
+                        if(file_info.file_size > options.validation[input_name].file_size) valid = false;
+                        if(options.validation[input_name].file_type.length !== 0){
+                            if($.inArray(file_info.file_extension, (options.validation[input_name].file_type)) < 0) valid = false;
+                        }
+                    }
+                    if(multiple_files[input_name].length > options.validation[input_name].file_count) valid = false;
+                    if(!valid) message_preview.html("ka Error");
+                    else message_preview.html("");
+                };
+
                 var clearFileInput = function (e, input_name) {
                     e.target.value = null;
                     e.target.files = null;
@@ -127,11 +164,12 @@
                         event.preventDefault();
                         var input_name = $(this).attr("target");
                         $(_id.pyFormat({input_name: input_name})).html("");
+                        $("#"+input_name+"_preview_message").html("");
                         single_files[input_name] = null;
                     });
                 };
 
-                var removeMultipleFile = function () {
+                var removeMultipleFile = function (options) {
                     $(document).on("click", ".j_remove_multiple", function (event) {
                         event.preventDefault();
                         var input_name = $(this).attr("target");
@@ -144,6 +182,7 @@
                                 }
                             }
                         }
+                        multipleFileValidation(input_name, options);
                     });
                 };
 
@@ -170,17 +209,42 @@
 
                 var init = function (options) {
                     String.prototype.pyFormat = Helper.pyFormat;
-                    options = $.extend(defaults, options);
                     window.multiple_files = [];
                     window.single_files = [];
                     var files_obj = _this.find("input:file");
                     var single_file_obj = [];
                     var multiple_file_obj = [];
+                    setDefaultValidation(files_obj);
+                    if(typeof (options) != "undefined"){
+                        $.each(defaults.validation,function(input_name, value){
+                            if(typeof (options.validation[input_name]) != "undefined") {
+                                defaults.validation[input_name] =  {
+                                    ...defaults.validation[input_name],
+                                    ...options.validation[input_name]
+                                }
+                            }
+                        });
+                    }
+                    options = $.extend(true,defaults, options);
+                    console.log(options);
                     populateObjectArrays(files_obj, single_file_obj, multiple_file_obj);
                     singleFileUpload(single_file_obj, options);
                     multipleFileUpload(multiple_file_obj, options);
                     Helper.removeSingleFile();
-                    Helper.removeMultipleFile();
+                    Helper.removeMultipleFile(options);
+                };
+
+                var setDefaultValidation = function (files_obj) {
+                    var rules = {
+                        file_size: 2,
+                        file_type: [".csv", ".pdf", ".txt", ".doc", ".rar", ".sql"],
+                        file_count: 5
+                    };
+                    files_obj.each(function (key, obj) {
+                        var input_name =$(this).attr("name")
+                        input_name = input_name.replace(/\[|]/gm, "");
+                        defaults.validation[input_name] = rules;
+                    });
                 };
 
                 var populateObjectArrays = function (files_obj, single_file_obj, multiple_file_obj) {
@@ -227,10 +291,14 @@
             })($(this), Helper);
 
             var defaults = {
-                preview_element: "div",
-                preview_element_item: "span",
-                remove_link_style: "j_remove_link",
-                remove_link_label: "X"
+                message_element:"div",
+                message_element_item:"span",
+                preview_element:"div",
+                preview_element_item:"span",
+                remove_link_style:"j_remove_link",
+                remove_link_label:"X",
+                enable_validation:true,
+                validation:{}
             };
             Uploader.init(options);
         });
