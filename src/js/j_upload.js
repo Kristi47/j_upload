@@ -4,7 +4,7 @@
         return this.each(function () {
             var Helper = (function () {
 
-                var _id = "#{input_name}_preview";
+                var _id = "#{id}_preview";
                 var tag_builder = "<{tag}></{tag}>";
                 var tag_remove = "<a href='' target='{input_name}' file_id='{file_id}' class='{custom_class} {default_class}'>{rm_label}</a>";
                 var single_preview = '<{tag} class="j_preview_container_item" title="{file_name}">{file_short_name} ({file_extension}) ({file_size} MB) {href}</{tag}}>';
@@ -215,7 +215,7 @@
                         event.preventDefault();
                         var input_name = $(this).attr("target");
                         var file_id = $(this).attr("file_id");
-                        $(_id.pyFormat({input_name: input_name})).children("#" + file_id).remove();
+                        $(_id.pyFormat({id: input_name})).children("#" + file_id).remove();
                         for (var key in multiple_files) {
                             for (var i = 0; i < multiple_files[key].length; i++) {
                                 if (multiple_files[key][i].id === file_id) {
@@ -238,7 +238,7 @@
 
                 var j_isValid = function(){
                     return isValid;
-                }
+                };
 
                 return {
                     handleSingleFileUpload:handleSingleFileUpload,
@@ -252,11 +252,7 @@
             })();
 
             var Uploader = (function (_this, Helper) {
-
                 var init = function (options) {
-                    if(typeof(options) !== "undefined" && typeof(options) !== "object"){
-                        throw Error("Wrong parameter, to initialize pass an Object");
-                    }
                     String.prototype.pyFormat = Helper.pyFormat;
                     window.multiple_files = [];
                     window.single_files = [];
@@ -264,13 +260,7 @@
                     var single_file_obj = [];
                     var multiple_file_obj = [];
                     setDefaultValidation(files_obj);
-                    if(typeof(options) != "undefined"){
-                        if (typeof(options.validation) != "undefined"){
-                            $.each(defaults.validation, function (key, value) {
-                                defaults.validation[key] = $.extend(defaults.validation[key], options.validation[key]);
-                            });
-                        }
-                    }
+                    setClientOptions(options);
                     options = $.extend(true, defaults, options);
                     populateObjectArrays(files_obj, single_file_obj, multiple_file_obj);
                     singleFileUpload(single_file_obj, options);
@@ -280,11 +270,18 @@
                 };
 
                 var setDefaultValidation = function (files_obj) {
-                    files_obj.each(function (key, obj) {
-                        var input_name =$(this).attr("name")
-                        input_name = input_name.replace(/\[|]/gm, "");
+                    files_obj.each(function () {
+                        var input_name =$(this).attr("name").replace(/\[|]/gm, "");
                         defaults.validation[input_name] = $.extend(true, {}, rules);
                     });
+                };
+
+                var setClientOptions = function (options) {
+                    if(typeof(options) != "undefined" && typeof(options.validation) != "undefined"){
+                        $.each(defaults.validation, function (key, value) {
+                            defaults.validation[key] = $.extend(defaults.validation[key], options.validation[key]);
+                        });
+                    }
                 };
 
                 var populateObjectArrays = function (files_obj, single_file_obj, multiple_file_obj) {
@@ -360,6 +357,9 @@
             var version = jQuery().jquery;
             if(version < "3.4.1"){
                 throw Error("Wrong jQuery version, update to version 3.4.1");
+            }
+            if(typeof(options) !== "undefined" && typeof(options) !== "object"){
+                throw Error("Wrong parameter, to initialize pass an Object");
             }
             Uploader.init(options);
         });
