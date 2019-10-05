@@ -1,11 +1,15 @@
 (function ($, window, document) {
+
     $.fn.j_upload = function (options) {
         return this.each(function () {
             var Helper = (function () {
 
                 var _id = "#{input_name}_preview";
                 var tag_builder = "<{tag}></{tag}>";
-                var tag_remove = "<a href='' target='{input_name}' file_id='{file_id}' class='{custom_class} {default_class}'>{rm_label}</a>"
+                var tag_remove = "<a href='' target='{input_name}' file_id='{file_id}' class='{custom_class} {default_class}'>{rm_label}</a>";
+                var single_preview = '<{tag} class="j_preview_container_item" title="{file_name}">{file_short_name} ({file_extension}) ({file_size} MB) {href}</{tag}}>';
+                var multiple_preview = '<{tag} class="j_preview_container_item {exist_class}" title="{file_name}" id="{file_id}">{file_short_name} ({file_extension}) ({file_size} MB) {href}</{tag}>';
+                var isValid = true;
 
                 var createPreviewElement = function (input_obj, options) {
                     var dom_element = $(tag_builder.pyFormat({tag: options.preview_element}));
@@ -72,7 +76,7 @@
                         custom_class: options.remove_link_style,
                         rm_label: options.remove_link_label
                     });
-                    return '<{tag} class="j_preview_container_item" title="{file_name}">{file_short_name} ({file_extension}) ({file_size} MB) {href}</{tag}}>'.pyFormat(file_info);
+                    return single_preview.pyFormat(file_info);
                 };
 
                 var createPreviewMultipleItem = function (file, input_name, file_id, options) {
@@ -88,7 +92,7 @@
                         custom_class: options.remove_link_style,
                         rm_label: options.remove_link_label
                     });
-                    return '<{tag} class="j_preview_container_item {exist_class}" title="{file_name}" id="{file_id}">{file_short_name} ({file_extension}) ({file_size} MB) {href}</{tag}>'.pyFormat(file_info);
+                    return multiple_preview.pyFormat(file_info);
                 };
 
                 var getFileInfo = function (file) {
@@ -127,30 +131,67 @@
                 };
 
                 var singleFileValidation = function (input_name, options) {
-                    var file_info = getFileInfo(single_files[input_name].file);
                     var message_preview = $("#"+input_name+"_preview_message");
-                    var valid = true;
-                    if(file_info.file_size > options.validation[input_name].file_size) valid = false;
-                    if(options.validation[input_name].file_type.length !== 0){
-                        if($.inArray(file_info.file_extension, (options.validation[input_name].file_type)) < 0) valid = false;
-                    }
-                    if(!valid) message_preview.html("ka Error");
+                    var file_info = getFileInfo(single_files[input_name].file);
+                    var validation_obj = validationRules(input_name, options, file_info);
+                    if(!validation_obj.valid) message_preview.html(validation_obj.error_msg);
                     else message_preview.html("");
+                    isValid = validation_obj.valid;
                 };
 
                 var multipleFileValidation = function (input_name, options) {
                     var message_preview = $("#"+input_name+"_preview_message");
-                    var valid = true;
+                    var validation_obj = {
+                        valid:true,
+                        error_msg:""
+                    };
                     for (var i = 0; i < multiple_files[input_name].length; i++) {
                         var file_info = getFileInfo(multiple_files[input_name][i].file);
-                        if(file_info.file_size > options.validation[input_name].file_size) valid = false;
-                        if(options.validation[input_name].file_type.length !== 0){
-                            if($.inArray(file_info.file_extension, (options.validation[input_name].file_type)) < 0) valid = false;
+                        var obj =  validationRules(input_name, options, file_info);
+                        validation_obj.valid = obj.valid;
+                        validation_obj.error_msg = obj.error_msg;
+                    }
+                    if(multiple_files[input_name].length > options.validation[input_name].file_count) {
+                        validation_obj.valid = false;
+                        validation_obj.error_msg += "<{tag}>{msg}</{tag}>".pyFormat({
+                            tag:options.message_element_item,
+                            msg:options.validation_message.file_count.pyFormat({
+                                file_count:options.validation[input_name].file_count
+                            })
+                        });
+                    }
+                    if(!validation_obj.valid) message_preview.html(validation_obj.error_msg);
+                    else message_preview.html("");
+                    isValid = validation_obj.valid;
+                };
+
+                var validationRules = function (input_name, options, file_info) {
+                    var error_msg = "";
+                    var valid = true;
+                    if(file_info.file_size > options.validation[input_name].file_size) {
+                        valid = false;
+                        error_msg += "<{tag}>{msg}</{tag}>".pyFormat({
+                            tag:options.message_element_item,
+                            msg:options.validation_message.file_size.pyFormat({
+                                file_size:options.validation[input_name].file_size
+                            })
+                        });
+                    }
+                    if(options.validation[input_name].file_type.length !== 0){
+                        if($.inArray(file_info.file_extension, (options.validation[input_name].file_type)) < 0) {
+                            valid = false;
+                            error_msg += "<{tag}>{msg}</{tag}>".pyFormat({
+                                tag:options.message_element_item,
+                                msg:options.validation_message.file_type.pyFormat({
+                                    file_type:JSON.stringify(options.validation[input_name].file_type)
+                                })
+                            });
                         }
                     }
-                    if(multiple_files[input_name].length > options.validation[input_name].file_count) valid = false;
-                    if(!valid) message_preview.html("ka Error");
-                    else message_preview.html("");
+                    return {
+                        valid:valid,
+                        error_msg:error_msg
+                    }
                 };
 
                 var clearFileInput = function (e, input_name) {
@@ -195,19 +236,27 @@
                     return string;
                 };
 
+                var j_isValid = function(){
+                    return isValid;
+                }
+
                 return {
-                    handleSingleFileUpload: handleSingleFileUpload,
-                    handleMultipleFileUpload: handleMultipleFileUpload,
-                    createPreviewElement: createPreviewElement,
-                    removeSingleFile: removeSingleFile,
-                    removeMultipleFile: removeMultipleFile,
-                    pyFormat: pyFormat
+                    handleSingleFileUpload:handleSingleFileUpload,
+                    handleMultipleFileUpload:handleMultipleFileUpload,
+                    createPreviewElement:createPreviewElement,
+                    removeSingleFile:removeSingleFile,
+                    removeMultipleFile:removeMultipleFile,
+                    pyFormat:pyFormat,
+                    j_isValid:j_isValid
                 }
             })();
 
             var Uploader = (function (_this, Helper) {
 
                 var init = function (options) {
+                    if(typeof(options) !== "undefined" && typeof(options) !== "object"){
+                        throw Error("Wrong parameter, to initialize pass an Object");
+                    }
                     String.prototype.pyFormat = Helper.pyFormat;
                     window.multiple_files = [];
                     window.single_files = [];
@@ -215,18 +264,14 @@
                     var single_file_obj = [];
                     var multiple_file_obj = [];
                     setDefaultValidation(files_obj);
-                    if(typeof (options) != "undefined"){
-                        $.each(defaults.validation,function(input_name, value){
-                            if(typeof (options.validation[input_name]) != "undefined") {
-                                defaults.validation[input_name] =  {
-                                    ...defaults.validation[input_name],
-                                    ...options.validation[input_name]
-                                }
-                            }
-                        });
+                    if(typeof(options) != "undefined"){
+                        if (typeof(options.validation) != "undefined"){
+                            $.each(defaults.validation, function (key, value) {
+                                defaults.validation[key] = $.extend(defaults.validation[key], options.validation[key]);
+                            });
+                        }
                     }
-                    options = $.extend(true,defaults, options);
-                    console.log(options);
+                    options = $.extend(true, defaults, options);
                     populateObjectArrays(files_obj, single_file_obj, multiple_file_obj);
                     singleFileUpload(single_file_obj, options);
                     multipleFileUpload(multiple_file_obj, options);
@@ -235,15 +280,10 @@
                 };
 
                 var setDefaultValidation = function (files_obj) {
-                    var rules = {
-                        file_size: 2,
-                        file_type: [".csv", ".pdf", ".txt", ".doc", ".rar", ".sql"],
-                        file_count: 5
-                    };
                     files_obj.each(function (key, obj) {
                         var input_name =$(this).attr("name")
                         input_name = input_name.replace(/\[|]/gm, "");
-                        defaults.validation[input_name] = rules;
+                        defaults.validation[input_name] = $.extend(true, {}, rules);
                     });
                 };
 
@@ -270,9 +310,9 @@
                     });
                 };
 
-                window.form_bind = function (_this) {
+
+                window.j_prepareFormData = function (_this) {
                     var formData = new FormData(_this);
-                    console.log(single_files);
                     for (var index in single_files) {
                         formData.append(index, single_files[index] == null ? null : single_files[index].file);
                     }
@@ -284,11 +324,22 @@
                     return formData;
                 };
 
+                window.j_isValid = function () {
+                    return Helper.j_isValid();
+                };
+
                 return {
                     init: init
                 };
 
             })($(this), Helper);
+
+
+            var rules = {
+                file_size:2,
+                file_type:[".csv", ".pdf", ".txt", ".doc", ".rar", ".sql"],
+                file_count: 5
+            };
 
             var defaults = {
                 message_element:"div",
@@ -297,9 +348,19 @@
                 preview_element_item:"span",
                 remove_link_style:"j_remove_link",
                 remove_link_label:"X",
-                enable_validation:true,
-                validation:{}
+                enable_validation:false,
+                validation:{},
+                validation_message:{
+                    file_size:"File size must be lower than {file_size} MB",
+                    file_type:"File type must be {file_type}",
+                    file_count:"Number of files must not exceed {file_count} files"
+                }
             };
+
+            var version = jQuery().jquery;
+            if(version < "3.4.1"){
+                throw Error("Wrong jQuery version, update to version 3.4.1");
+            }
             Uploader.init(options);
         });
     };
