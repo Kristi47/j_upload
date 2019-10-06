@@ -343,7 +343,7 @@
 
             var rules = {
                 file_size:2,
-                file_type:[".csv", ".pdf", ".txt", ".doc", ".rar", ".sql"],
+                file_type:[],
                 file_count: 5
             };
 
