@@ -1,3 +1,12 @@
+/*
+    jQUery File Handler , j_upload v1.0.0
+    @author Kristi Mita
+    @email kristimita33@gmail.com
+
+    Handling files on frontend, add or remove files before uploading it.
+    File validation is also supported
+ */
+
 (function ($, window, document) {
 
     $.fn.j_upload = function (options) {
