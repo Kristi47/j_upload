@@ -111,6 +111,29 @@ videos:{
 - photos - is the name of html input element
 - videos - is the name of html input element
 
+## Functions
+- **j_prepareFormData()** - return a FormData Object which will be used in HTTP Request, See example below.
+- **j_isValid()** - returns a boolean to indicate if the form has passed the validation rules.
+
+```
+$("#form-id").j_upload({
+     enable_validation:true
+}).submit(function(event){
+    event.preventDefault();
+    
+    var formData = j_prepareFormData(this);
+    
+    if(!j_isValid()){
+        console.log("Form is not valid");
+        return;
+    }
+    
+    $.ajax({
+       ...
+    });
+});
+```
+
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
