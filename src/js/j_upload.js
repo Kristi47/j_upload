@@ -141,9 +141,13 @@
 
                 var singleFileValidation = function (input_name, options) {
                     var message_preview = $("#"+input_name+"_preview_message");
+                    var validation_obj = {
+                        valid:true,
+                        error_msg:[]
+                    };
                     var file_info = getFileInfo(single_files[input_name].file);
-                    var validation_obj = validationRules(input_name, options, file_info);
-                    if(!validation_obj.valid) message_preview.html(validation_obj.error_msg);
+                    validationRules(input_name, options, file_info, validation_obj);
+                    if(!validation_obj.valid) message_preview.html(validation_obj.error_msg.join(" "));
                     else message_preview.html("");
                     isValid = validation_obj.valid;
                 };
@@ -152,55 +156,52 @@
                     var message_preview = $("#"+input_name+"_preview_message");
                     var validation_obj = {
                         valid:true,
-                        error_msg:""
+                        error_msg:[]
                     };
                     for (var i = 0; i < multiple_files[input_name].length; i++) {
                         var file_info = getFileInfo(multiple_files[input_name][i].file);
-                        var obj =  validationRules(input_name, options, file_info);
-                        validation_obj.valid = obj.valid;
-                        validation_obj.error_msg = obj.error_msg;
+                        validationRules(input_name, options, file_info, validation_obj);
                     }
                     if(multiple_files[input_name].length > options.validation[input_name].file_count) {
                         validation_obj.valid = false;
-                        validation_obj.error_msg += "<{tag}>{msg}</{tag}>".pyFormat({
+                        validation_obj.error_msg.push("<{tag}>{msg}</{tag}>".pyFormat({
                             tag:options.message_element_item,
                             msg:options.validation_message.file_count.pyFormat({
                                 file_count:options.validation[input_name].file_count
                             })
-                        });
+                        }));
                     }
-                    if(!validation_obj.valid) message_preview.html(validation_obj.error_msg);
+                    validation_obj.error_msg = validation_obj.error_msg.filter(filterUnique);
+                    if(!validation_obj.valid) message_preview.html(validation_obj.error_msg.join(" "));
                     else message_preview.html("");
                     isValid = validation_obj.valid;
                 };
 
-                var validationRules = function (input_name, options, file_info) {
-                    var error_msg = "";
-                    var valid = true;
+                var validationRules = function (input_name, options, file_info, validation_obj) {
                     if(file_info.file_size > options.validation[input_name].file_size) {
-                        valid = false;
-                        error_msg += "<{tag}>{msg}</{tag}>".pyFormat({
+                        validation_obj.valid = false;
+                        validation_obj.error_msg.push("<{tag}>{msg}</{tag}>".pyFormat({
                             tag:options.message_element_item,
                             msg:options.validation_message.file_size.pyFormat({
                                 file_size:options.validation[input_name].file_size
                             })
-                        });
+                        }));
                     }
                     if(options.validation[input_name].file_type.length !== 0){
                         if($.inArray(file_info.file_extension, (options.validation[input_name].file_type)) < 0) {
-                            valid = false;
-                            error_msg += "<{tag}>{msg}</{tag}>".pyFormat({
+                            validation_obj.valid = false;
+                            validation_obj.error_msg.push("<{tag}>{msg}</{tag}>".pyFormat({
                                 tag:options.message_element_item,
                                 msg:options.validation_message.file_type.pyFormat({
                                     file_type:JSON.stringify(options.validation[input_name].file_type)
                                 })
-                            });
+                            }));
                         }
                     }
-                    return {
-                        valid:valid,
-                        error_msg:error_msg
-                    }
+                };
+
+                var filterUnique = function (value, index, self) {
+                    return self.indexOf(value) === index;
                 };
 
                 var clearFileInput = function (e, input_name) {
@@ -213,7 +214,7 @@
                     $(document).on("click", ".j_remove", function (event) {
                         event.preventDefault();
                         var input_name = $(this).attr("target");
-                        $(_id.pyFormat({input_name: input_name})).html("");
+                        $(_id.pyFormat({id: input_name})).html("");
                         $("#"+input_name+"_preview_message").html("");
                         single_files[input_name] = null;
                     });
