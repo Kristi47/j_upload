@@ -84,12 +84,12 @@ j_upload function takes an Object as argument. Full Object example below:
 ```
 - **remove_link_label** - define label for removing file (ex: X or 'Remove', <img> tag)
 ```
- preview_element_item: "X"
- preview_element_item: "Remove"
- preview_element_item: "<img src='remove_icon.png'/>"
+ remove_link_label: "X"
+ remove_link_label: "Remove"
+ remove_link_label: "<img src='remove_icon.png'/>"
 ```
 - **remove_link_style** - define the css class for removing link
-- **enable_validation** - enables defualt file validation (default: false)
+- **enable_validation** - enables default file validation (default: false)
   - file_size: 2MB (default) - max size for single file
   - file_type: [] (default) - empty array allows all type of file, define types ['.txt', '.pdf']
   - file_count: 5 (default) - max number of files for multiple file input
