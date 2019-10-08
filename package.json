@@ -1,6 +1,6 @@
 {
   "name": "j_upload",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "jQuery module for handling files before uploading them. Add or remove files, custom file validation, custom style for preview",
   "main": "src/js/j_upload.js",
   "scripts": {
