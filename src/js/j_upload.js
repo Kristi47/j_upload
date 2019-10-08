@@ -1,5 +1,5 @@
 /*
-    jQUery File Handler , j_upload v1.0.0
+    jQuery File Handler , j_upload v1.0.0
     @author Kristi Mita
     @email kristimita33@gmail.com
 
