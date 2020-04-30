@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/Kristi47/jquery-fileUploader#readme",
   "dependencies": {
-    "jquery": "3.4.0"
+    "jquery": "3.5.0"
   },
   "devDependencies": {}
 }
